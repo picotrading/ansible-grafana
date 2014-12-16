@@ -1,0 +1,1 @@
+- Add configuration for `plugins` and `dependencies` once there are any available

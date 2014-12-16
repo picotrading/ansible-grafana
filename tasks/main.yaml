@@ -1,0 +1,32 @@
+---
+
+- name: Test distribution
+  assert:
+    that: ansible_os_family == "RedHat"
+
+- name: Install Apache
+  yum:
+    pkg: httpd
+    state: present
+
+- name: Start Apache
+  service:
+    name: httpd
+    enabled: yes
+    state: started
+
+- name: Install Grafana package for RedHat
+  yum:
+    pkg: grafana
+    state: present
+
+- name: Create additional Apache configuration for Grafana
+  template:
+    src: grafana.conf.j2
+    dest: /etc/httpd/conf.d/grafana.conf
+  notify: Restart Apache
+
+- name: Configure Grafana
+  template:
+    src: config.js.j2
+    dest: /var/www/html/grafana/config.js

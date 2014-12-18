@@ -4,8 +4,7 @@ Version:	1.9.0
 Release:	1%{?dist}
 License:	Apache 2.0
 URL:		http://grafana.org
-Group:		Applications/Internet
-Source:		%{name}-%{version}.tar.gz
+Source:		https://github.com/%{name}/%{name}/archive/v%{version}.tar.gz
 BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root
 BuildArch:	noarch
 BuildRequires:	nodejs
@@ -25,6 +24,7 @@ Graphite, InfluxDB & OpenTSDB.
 %build
 npm install
 grunt
+
 
 %install
 [ "%{buildroot}" != / ] && %{__rm} -rf "%{buildroot}"

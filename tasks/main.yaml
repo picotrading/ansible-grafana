@@ -6,7 +6,7 @@
 
 - name: Install Apache
   yum:
-    pkg: httpd
+    name: httpd
     state: present
 
 - name: Start Apache
@@ -17,7 +17,7 @@
 
 - name: Install Grafana package for RedHat
   yum:
-    pkg: grafana
+    name: grafana
     state: present
 
 - name: Create additional Apache configuration for Grafana

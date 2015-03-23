@@ -19,14 +19,19 @@
   yum:
     name: grafana
     state: present
+  tags:
+    - grafana_pkg
 
 - name: Create additional Apache configuration for Grafana
   template:
     src: grafana.conf.j2
     dest: /etc/httpd/conf.d/grafana.conf
-  notify: Restart Apache
+  notify:
+    - Restart Apache
 
 - name: Configure Grafana
   template:
     src: config.js.j2
     dest: /var/www/html/grafana/config.js
+  tags:
+    - grafana_config

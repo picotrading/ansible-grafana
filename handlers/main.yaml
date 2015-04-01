@@ -1,6 +1,6 @@
 ---
 
-- name: Restart Apache
+- name: Restart grafana
   service:
-    name: httpd
+    name: grafana
     state: restarted

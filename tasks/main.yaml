@@ -4,34 +4,44 @@
   assert:
     that: ansible_os_family == "RedHat"
 
-- name: Install Apache
-  yum:
-    name: httpd
-    state: present
-
-- name: Start Apache
-  service:
-    name: httpd
-    enabled: yes
-    state: started
-
 - name: Install Grafana package for RedHat
   yum:
-    name: grafana
+    name: "{{ grafana_pkg }}"
     state: present
+  notify:
+    - Restart grafana
   tags:
     - grafana_pkg
 
-- name: Create additional Apache configuration for Grafana
-  template:
-    src: grafana.conf.j2
-    dest: /etc/httpd/conf.d/grafana.conf
-  notify:
-    - Restart Apache
-
 - name: Configure Grafana
   template:
-    src: config.js.j2
-    dest: /var/www/html/grafana/config.js
+    src: grafana.ini.j2
+    dest: /etc/grafana/grafana.ini
+  notify:
+    - Restart grafana
   tags:
     - grafana_config
+
+- name: Check if the binary can bind to TCP port <1024
+  shell: getcap /usr/bin/grafana | grep cap_net_bind_service
+  register: grafana_bind_cap
+  failed_when: False
+  changed_when: False
+  when: grafana_allow_low_port
+  tags:
+    - grafana_config
+
+- name: Set capability on the binary file to be able to bind to TCP port <1024
+  shell:
+    setcap 'cap_net_bind_service=+ep' /usr/bin/grafana
+  when: grafana_allow_low_port and grafana_bind_cap.rc > 0
+  notify:
+    - Restart grafana
+  tags:
+    - grafana_config
+
+- name: Make sure grafana service is enabled and running
+  service:
+    name: grafana
+    enabled: yes
+    state: running

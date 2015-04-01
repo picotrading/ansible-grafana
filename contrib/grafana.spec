@@ -12,6 +12,9 @@ Release:        1%{?dist}
 License:        Apache 2.0
 URL:            http://grafana.org
 Source:         https://github.com/%{name}/%{name}/archive/%{tag}.tar.gz
+%if 0%{?rhel} > 6 || 0%{?fedora} > 15
+Source1:        grafana.service
+%endif
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires:  git
 BuildRequires:  golang
@@ -75,25 +78,31 @@ install -m 0755 %{buildroot}%{_datarootdir}/%{name}/scripts/init.sh %{buildroot}
 # Move doc files
 %{__mv} %{buildroot}%{_datarootdir}/%{name}/{LICENSE,NOTICE,README}.md %{_builddir}/%{name}-%{version}
 
-# Create data directory
-%{__mkdir_p} %{_datarootdir}/%{name}/data
-
 # Copy the executable file
 %{__mkdir_p} %{buildroot}%{_bindir}
 %{__cp} ./%{name} %{buildroot}%{_bindir}
+
+%if 0%{?rhel} > 6 || 0%{?fedora} > 15
+# Copy the systemd script
+%{__mkdir_p} %{buildroot}%{_unitdir}
+%{__cp} %{SOURCE1} %{buildroot}%{_unitdir}
+%endif
 
 # Modify the config file
 %{__sed} -i 's,/opt/%{name}/data/%{name}.db,%{_sharedstatedir}/%{name}/%{name}.db,' %{buildroot}%{_sysconfdir}/%{name}/%{name}.ini
 
 # Modify the init.d file
 %{__sed} -i 's,/opt/%{name}/current/%{name},%{_bindir}/%{name},g' %{buildroot}%{_initddir}/%{name}
-%{__sed} -i 's,/opt/%{name}/current,%{_sharedstatedir}/%{name},g' %{buildroot}%{_initddir}/%{name}
+%{__sed} -i 's,/opt/%{name}/current,%{_datarootdir}/%{name},g' %{buildroot}%{_initddir}/%{name}
 
 # Create the log directory
 %{__mkdir_p} %{buildroot}%{_var}/log/%{name}
 
 # Create the DB directory
 %{__mkdir_p} %{buildroot}%{_sharedstatedir}/%{name}
+
+# Create data directory
+%{__mkdir_p} %{buildroot}%{_datarootdir}/%{name}/data
 
 
 %post
@@ -119,11 +128,14 @@ getent passwd %{name} >/dev/null || \
 %{_var}/log/%{name}
 %{_datarootdir}/%{name}
 %{_sharedstatedir}/%{name}
+%if 0%{?rhel} > 6 || 0%{?fedora} > 15
+%{_unitdir}/%{name}.service
+%endif
 
 
 %changelog
-* Tue Mar 30 2015 Jiri Tyr <jiri.tyr at gmail.com>
-- Modifications necessary to build Grafana v.2.0.0_beta1.
+* Wed Apr 1 2015 Jiri Tyr <jiri.tyr at gmail.com>
+- Modifications necessary to build Grafana v2.0.0_beta1.
 
 * Tue Dec 16 2014 Jiri Tyr <jiri.tyr at gmail.com>
 - First build.

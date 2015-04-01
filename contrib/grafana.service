@@ -1,0 +1,12 @@
+[Unit]
+Description=Grafana server
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/etc/init.d/grafana start
+ExecStop=/etc/init.d/grafana stop
+
+[Install]
+WantedBy=multi-user.target

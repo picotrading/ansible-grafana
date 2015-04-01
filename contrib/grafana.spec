@@ -1,15 +1,22 @@
-Name:		grafana
-Summary:	Metrics dashboard and graph editor
-Version:	1.9.0
-Release:	1%{?dist}
-License:	Apache 2.0
-URL:		http://grafana.org
-Source:		https://github.com/%{name}/%{name}/archive/v%{version}.tar.gz
-BuildRoot:	%{_tmppath}/%{name}-%{version}-%{release}-root
-BuildArch:	noarch
-BuildRequires:	nodejs
-BuildRequires:	nodejs-grunt-cli
-BuildRequires:	npm
+%define my_version 2.0.0
+%define my_release beta1
+%define pkg_version %{my_version}_%{my_release}
+%define tag_version %{my_version}-%{my_release}
+%define tag v%{tag_version}
+
+
+Name:           grafana
+Summary:        Metrics dashboard and graph editor
+Version:        %{pkg_version}
+Release:        1%{?dist}
+License:        Apache 2.0
+URL:            http://grafana.org
+Source:         https://github.com/%{name}/%{name}/archive/%{tag}.tar.gz
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root
+BuildRequires:  git
+BuildRequires:  golang
+BuildRequires:  npm
+BuildRequires:  nodejs-grunt-cli
 
 
 %description
@@ -18,18 +25,85 @@ Graphite, InfluxDB & OpenTSDB.
 
 
 %prep
-%setup -q
+%setup -T -c -D
 
 
 %build
-npm install
-grunt
+export GOPATH=%{_builddir}/%{name}-%{version}/go
+export NPM_CONFIG_CACHE=%{_builddir}/%{name}-%{version}/npm
+
+if [ ! -e $GOPATH/src/github.com/%{name}/%{name}/%{name} ]; then
+    go get -v -tags %{tag} github.com/%{name}/%{name} || true
+
+    cd $GOPATH/src/github.com/%{name}/%{name}
+    git checkout %{tag}
+
+    # Build the backend
+    go run build.go setup
+    $GOPATH/bin/godep restore
+    go build .
+fi
+
+if [ ! -e $GOPATH/src/github.com/%{name}/%{name}/dist/%{name}-%{tag_version}.%{_arch}.tar.gz ]; then
+    cd $GOPATH/src/github.com/%{name}/%{name}
+
+    # Build the frontend
+    npm install
+    grunt release
+fi
 
 
 %install
 [ "%{buildroot}" != / ] && %{__rm} -rf "%{buildroot}"
-%{__mkdir_p} %{buildroot}%{_var}/www/html/%{name}
-%{__cp} -r src/* %{buildroot}%{_var}/www/html/%{name}
+
+cd %{_builddir}/%{name}-%{version}/go/src/github.com/%{name}/%{name}
+
+# Move the frontend files
+%{__mkdir_p} %{buildroot}%{_datarootdir}
+%{__tar} -xzf dist/%{name}-%{tag_version}.%{_arch}.tar.gz -C %{buildroot}%{_datarootdir}
+%{__mv} %{buildroot}%{_datarootdir}/%{name}-%{tag_version} %{buildroot}%{_datarootdir}/%{name}
+
+# Move the init.d script
+%{__mkdir_p} %{buildroot}/%{_initddir}
+install -m 0755 %{buildroot}%{_datarootdir}/%{name}/scripts/init.sh %{buildroot}/%{_initddir}/%{name}
+%{__rm} -fr %{buildroot}%{_datarootdir}/%{name}/scripts
+
+# Move the main config
+%{__mkdir_p} %{buildroot}%{_sysconfdir}/%{name}
+%{__mv} %{buildroot}%{_datarootdir}/%{name}/conf/sample.ini %{buildroot}%{_sysconfdir}/%{name}/%{name}.ini
+
+# Move doc files
+%{__mv} %{buildroot}%{_datarootdir}/%{name}/{LICENSE,NOTICE,README}.md %{_builddir}/%{name}-%{version}
+
+# Create data directory
+%{__mkdir_p} %{_datarootdir}/%{name}/data
+
+# Copy the executable file
+%{__mkdir_p} %{buildroot}%{_bindir}
+%{__cp} ./%{name} %{buildroot}%{_bindir}
+
+# Modify the config file
+%{__sed} -i 's,/opt/%{name}/data/%{name}.db,%{_sharedstatedir}/%{name}/%{name}.db,' %{buildroot}%{_sysconfdir}/%{name}/%{name}.ini
+
+# Modify the init.d file
+%{__sed} -i 's,/opt/%{name}/current/%{name},%{_bindir}/%{name},g' %{buildroot}%{_initddir}/%{name}
+%{__sed} -i 's,/opt/%{name}/current,%{_sharedstatedir}/%{name},g' %{buildroot}%{_initddir}/%{name}
+
+# Create the log directory
+%{__mkdir_p} %{buildroot}%{_var}/log/%{name}
+
+# Create the DB directory
+%{__mkdir_p} %{buildroot}%{_sharedstatedir}/%{name}
+
+
+%post
+# Create new user
+getent group %{name} >/dev/null || groupadd -r %{name}
+getent passwd %{name} >/dev/null || \
+    useradd -r -g %{name} -m -s /sbin/nologin %{name}
+
+# Change permissions on log, DB and data directory
+%{__chown} %{name}:%{name} %{_var}/log/%{name} %{_sharedstatedir}/%{name} %{_datarootdir}/%{name}/data
 
 
 %clean
@@ -38,9 +112,18 @@ grunt
 
 %files
 %defattr(-,root,root,-)
-%{_var}/www/html/%{name}
+%doc LICENSE.md NOTICE.md README.md
+%{_bindir}/%{name}
+%config %{_sysconfdir}/%{name}
+%{_initddir}/%{name}
+%{_var}/log/%{name}
+%{_datarootdir}/%{name}
+%{_sharedstatedir}/%{name}
 
 
 %changelog
+* Tue Mar 30 2015 Jiri Tyr <jiri.tyr at gmail.com>
+- Modifications necessary to build Grafana v.2.0.0_beta1.
+
 * Tue Dec 16 2014 Jiri Tyr <jiri.tyr at gmail.com>
 - First build.

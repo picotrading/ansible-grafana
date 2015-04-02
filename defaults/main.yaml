@@ -169,7 +169,7 @@ grafana_users:
 
 
 # Enable anonymous access
-grafana_auth__anonymous_enabled: false
+grafana_auth__anonymous_enabled: "false"
 
 # Specify organization name that should be used for unauthenticated users
 grafana_auth__anonymous_org_name: Main Org.

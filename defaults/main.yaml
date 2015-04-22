@@ -1,17 +1,25 @@
 ---
 
-# Package to be installet (you can force a specific version here)
+# Package to be installed (you can force a specific version here)
 grafana_pkg: grafana
 
 # Allow grafana to bind to TCP port <1024
 grafana_allow_low_port: false
 
 
-# Default window title
-grafana_app_name: Grafana
-
 # Default environment
 grafana_app_mode: production
+
+
+# Default data path
+grafana_paths_data: /var/lib/grafana
+
+# Default logs path
+grafana_paths_logs: /var/log/grafana
+
+grafana_paths:
+  data: "{{ grafana_paths_data }}"
+  logs: "{{ grafana_paths_logs }}"
 
 
 # Protocol (http or https)
@@ -53,21 +61,6 @@ grafana_server:
   cert_key: "{{ grafana_server_cert_key }}"
 
 
-# Server reporting, sends usage counters to stats.grafana.org every 24 hours.
-# No ip addresses are being tracked, only simple counters to track
-# running instances, dashboard and error counts. It is very helpful to us.
-
-# Change this option to false to disable reporting.
-grafana_analytics_reporting_enabled: "true"
-
-# Google Analytics universal tracking code, only enabled if you specify an id here
-grafana_analytics_google_analytics_ua_id: ""
-
-grafana_analytics:
-  reporting_enabled: "{{ grafana_analytics_reporting_enabled }}"
-  google_analytics_ua_id: "{{ grafana_analytics_google_analytics_ua_id }}"
-
-
 # Either "mysql", "postgres" or "sqlite3", it's your choice
 grafana_database_type: sqlite3
 grafana_database_host: 127.0.0.1:3306
@@ -76,10 +69,10 @@ grafana_database_user: root
 grafana_database_password: ""
 
 # For "postgres" only, either "disable", "require" or "verify-full"
-grafana_database_ssl_mode: "disable"
+grafana_database_ssl_mode: disable
 
-# For "sqlite3" only
-grafana_database_path: /var/lib/grafana/grafana.db
+# For "sqlite3" only, path relative to data_path setting
+grafana_database_path: grafana.db
 
 grafana_database:
   type: "{{ grafana_database_type }}"
@@ -96,10 +89,10 @@ grafana_session_provider: file
 
 # Provider config options
 # memory: not have any config yet
-# file: session file path, e.g. `data/sessions`
+# file: session dir path, is relative to grafana data_path
 # redis: config like redis server addr, poolSize, password, e.g. `127.0.0.1:6379,100,grafana`
 # mysql: go-sql-driver/mysql dsn config string, e.g. `user:password@tcp(127.0.0.1)/database_name`
-grafana_session_provider_config: data/sessions
+grafana_session_provider_config: sessions
 
 # Session cookie name
 grafana_session_cookie_name: grafana_sess
@@ -110,20 +103,27 @@ grafana_session_cookie_secure: "false"
 # Session life time, default is 86400
 grafana_session_session_life_time: 86400
 
-# session id hash func, Either "sha1", "sha256" or "md5" default is sha1
-grafana_session_session_id_hashfunc: sha1
-
-# Session hash key, default is use random string
-grafana_session_session_id_hashkey: ""
-
 grafana_session:
   provider: "{{ grafana_session_provider }}"
   provider_config: "{{ grafana_session_provider_config }}"
   cookie_name: "{{ grafana_session_cookie_name }}"
   cookie_secure: "{{ grafana_session_cookie_secure }}"
   session_life_time: "{{ grafana_session_session_life_time }}"
-  session_id_hashfunc: "{{ grafana_session_session_id_hashfunc }}"
-  session_id_hashkey: "{{ grafana_session_session_id_hashkey }}"
+
+
+# Server reporting, sends usage counters to stats.grafana.org every 24 hours.
+# No ip addresses are being tracked, only simple counters to track
+# running instances, dashboard and error counts. It is very helpful to us.
+
+# Change this option to false to disable reporting.
+grafana_analytics_reporting_enabled: "true"
+
+# Google Analytics universal tracking code, only enabled if you specify an id here
+grafana_analytics_google_analytics_ua_id: ""
+
+grafana_analytics:
+  reporting_enabled: "{{ grafana_analytics_reporting_enabled }}"
+  google_analytics_ua_id: "{{ grafana_analytics_google_analytics_ua_id }}"
 
 
 # Default admin user, created on startup
@@ -189,6 +189,9 @@ grafana_auth__github_client_secret: some_secret
 grafana_auth__github_scopes: user:email
 grafana_auth__github_auth_url: https://github.com/login/oauth/authorize
 grafana_auth__github_token_url: https://github.com/login/oauth/access_token
+grafana_auth__github_api_url: https://api.github.com/user
+grafana_auth__github_allowed_domains: ""
+grafana_auth__github_allow_sign_up: "false"
 
 grafana_auth__github:
   enabled: "{{ grafana_auth__github_enabled }}"
@@ -197,6 +200,9 @@ grafana_auth__github:
   scopes: "{{ grafana_auth__github_scopes }}"
   auth_url: "{{ grafana_auth__github_auth_url }}"
   token_url: "{{ grafana_auth__github_token_url }}"
+  api_url: "{{ grafana_auth__github_api_url }}"
+  allowed_domains: "{{ grafana_auth__github_allowed_domains }}"
+  allow_sign_up: "{{ grafana_auth__github_allow_sign_up }}"
 
 
 grafana_auth__google_enabled: "false"
@@ -205,6 +211,9 @@ grafana_auth__google_client_secret: some_client_secret
 grafana_auth__google_scopes: https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email
 grafana_auth__google_auth_url: https://accounts.google.com/o/oauth2/auth
 grafana_auth__google_token_url: https://accounts.google.com/o/oauth2/token
+grafana_auth__google_api_url: https://www.googleapis.com/oauth2/v1/userinfo
+grafana_auth__google_allowed_domains: ""
+grafana_auth__google_allow_sign_up: "false"
 
 grafana_auth__google:
   enabled: "{{ grafana_auth__google_enabled }}"
@@ -213,10 +222,10 @@ grafana_auth__google:
   scopes: "{{ grafana_auth__google_scopes }}"
   auth_url: "{{ grafana_auth__google_auth_url }}"
   token_url: "{{ grafana_auth__google_token_url }}"
+  api_url: "{{ grafana_auth__google_api_url }}"
+  allowed_domains: "{{ grafana_auth__google_allowed_domains }}"
+  allow_sign_up: "{{ grafana_auth__google_allow_sign_up }}"
 
-
-# Log path
-grafana_log_root_path: /var/log/grafana
 
 # Either "console", "file", default is "console"
 # Use comma to separate multiple modes, e.g. "console, file"
@@ -229,7 +238,6 @@ grafana_log_buffer_len: 10000
 grafana_log_level: Info
 
 grafana_log:
-  root_path: "{{ grafana_log_root_path }}"
   mode: "{{ grafana_log_mode }}"
   buffer_len: "{{ grafana_log_buffer_len }}"
   level: "{{ grafana_log_level }}"
@@ -280,12 +288,12 @@ grafana_event_publisher:
 
 
 grafana_config:
-  app_name: "{{ grafana_app_name }}"
   app_mode: "{{ grafana_app_mode }}"
+  paths: "{{ grafana_paths }}"
   server: "{{ grafana_server }}"
-  analytics: "{{ grafana_analytics }}"
   database: "{{ grafana_database }}"
   session: "{{ grafana_session }}"
+  analytics: "{{ grafana_analytics }}"
   security: "{{ grafana_security }}"
   users: "{{ grafana_users }}"
   auth.anonymous: "{{ grafana_auth__anonymous }}"

@@ -23,7 +23,7 @@
     - grafana_config
 
 - name: Check if the binary can bind to TCP port <1024
-  shell: getcap /usr/bin/grafana | grep cap_net_bind_service
+  shell: getcap /usr/sbin/grafana-server | grep cap_net_bind_service
   register: grafana_bind_cap
   failed_when: False
   changed_when: False
@@ -32,8 +32,7 @@
     - grafana_config
 
 - name: Set capability on the binary file to be able to bind to TCP port <1024
-  shell:
-    setcap 'cap_net_bind_service=+ep' /usr/bin/grafana
+  shell: setcap 'cap_net_bind_service=+ep' /usr/sbin/grafana-server
   when: grafana_allow_low_port and grafana_bind_cap.rc > 0
   notify:
     - Restart grafana
@@ -42,6 +41,6 @@
 
 - name: Make sure grafana service is enabled and running
   service:
-    name: grafana
+    name: grafana-server
     enabled: yes
     state: running

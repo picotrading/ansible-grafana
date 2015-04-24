@@ -227,15 +227,15 @@ grafana_auth__google:
   allow_sign_up: "{{ grafana_auth__google_allow_sign_up }}"
 
 
-# Either "console", "file", default is "console"
+# Either "console", "file"
 # Use comma to separate multiple modes, e.g. "console, file"
-grafana_log_mode: console
+grafana_log_mode: console, file
 
 # Buffer length of channel, keep it as it is if you don't know what it is.
 grafana_log_buffer_len: 10000
 
 # Either "Trace", "Debug", "Info", "Warn", "Error", "Critical", default is "Trace"
-grafana_log_level: Info
+grafana_log_level: Trace
 
 grafana_log:
   mode: "{{ grafana_log_mode }}"

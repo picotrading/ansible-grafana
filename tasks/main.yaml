@@ -1,15 +1,12 @@
 ---
 
-- name: Test distribution
-  assert:
-    that: ansible_os_family == "RedHat"
+- include: yum.yaml
+  when: ansible_pkg_mgr == "yum"
+  tags:
+    - grafana_pkg
 
-- name: Install Grafana package for RedHat
-  yum:
-    name: "{{ grafana_pkg }}"
-    state: present
-  notify:
-    - Restart grafana
+- include: apt.yaml
+  when: ansible_pkg_mgr == "apt"
   tags:
     - grafana_pkg
 

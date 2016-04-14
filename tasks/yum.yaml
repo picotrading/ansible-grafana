@@ -1,0 +1,7 @@
+---
+- name: Install Grafana package for RedHat
+  yum:
+    name: "{{ grafana_pkg }}"
+    state: present
+  notify:
+    - Restart grafana

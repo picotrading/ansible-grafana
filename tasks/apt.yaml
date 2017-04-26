@@ -1,0 +1,15 @@
+---
+- name: Install package cloud gpg key
+  apt_key: url=https://packagecloud.io/gpg.key state=present
+
+- name: Add apt repository
+  apt_repository:
+    repo: 'deb https://packagecloud.io/grafana/stable/debian/ wheezy main'
+    state: present
+
+- name: Install Grafana package
+  apt:
+    name: "{{ grafana_pkg }}"
+    state: present
+  notify:
+    - Restart grafana

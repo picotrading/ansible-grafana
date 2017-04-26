@@ -2,8 +2,14 @@ grafana
 =======
 
 Role to install and configure Grafana - the metrics dashboard and graph editor.
+
+On yum/rpm based system
 It is installed from [RPM package](http://docs.grafana.org/installation/rpm/)
-available in the officiall [YUM repo](https://packagecloud.io/grafana/stable).
+available in the official [YUM repo](https://packagecloud.io/grafana/stable).
+
+On apt/deb based system
+It is installed from [RPM package](http://docs.grafana.org/installation/debian/)
+available in the official [APT repo](https://packagecloud.io/grafana/stable/debian/).
 
 The configuraton of the role is done in such way that it should not be necessary
 to change the role for any kind of configuration. All can be done either by
@@ -80,6 +86,14 @@ Example
         app_mode: production
         server:
           http_port: 8080
+
+
+# Example of how to install grafana 3.0.0-beta
+- hosts: myhost5
+  roles:
+    - role: grafana
+      grafana_apt_repo: https://packagecloud.io/grafana/testing/debian/ wheezy main
+        
 ```
 
 

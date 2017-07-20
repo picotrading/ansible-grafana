@@ -1,5 +1,7 @@
 ---
 
+grafana_apt_repo: deb https://packagecloud.io/grafana/stable/debian/ jessie main
+
 # Package to be installed (you can force a specific version here)
 grafana_pkg: grafana
 
@@ -303,5 +305,3 @@ grafana_config:
   log.console: "{{ grafana_log__console }}"
   log.file: "{{ grafana_log__file }}"
   event_publisher: "{{ grafana_event_publisher }}"
-
-grafana_apt_repo: deb https://packagecloud.io/grafana/stable/debian/ wheezy main

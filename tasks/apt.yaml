@@ -1,10 +1,16 @@
 ---
+
+- name: Ensure apt-transport-https is installed.
+  apt:
+    name: apt-transport-https
+    state: present
+    
 - name: Install package cloud gpg key
   apt_key: url=https://packagecloud.io/gpg.key state=present
 
 - name: Add apt repository
   apt_repository:
-    repo: 'deb https://packagecloud.io/grafana/stable/debian/ wheezy main'
+    repo: "{{ grafana_apt_repo }}"
     state: present
 
 - name: Install Grafana package

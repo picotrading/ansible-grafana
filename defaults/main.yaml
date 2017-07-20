@@ -1,5 +1,7 @@
 ---
 
+grafana_apt_repo: deb https://packagecloud.io/grafana/stable/debian/ jessie main
+
 # Package to be installed (you can force a specific version here)
 grafana_pkg: grafana
 
@@ -304,4 +306,32 @@ grafana_config:
   log.file: "{{ grafana_log__file }}"
   event_publisher: "{{ grafana_event_publisher }}"
 
-grafana_apt_repo: deb https://packagecloud.io/grafana/stable/debian/ wheezy main
+
+# Api parameters
+grafana_api_url:          http://127.0.0.1:3000
+grafana_api_user:         "{{ grafana_security_admin_user }}"
+grafana_api_password:     "{{ grafana_security_admin_password }}"
+
+# Datasources
+grafana_datasources_exclusive: false
+grafana_datasources:           []
+#  - name:      telegraf
+#    type:      influxdb
+#    isDefault: true
+#    access:    proxy
+#    basicAuth: false
+#    url:       http://localhost:8086
+#    database:  telegraf
+#    username:  ''
+#    password:  ''
+
+# Dashboards
+grafana_dashboards_exclusive: false
+grafana_dashboards: []
+#    - template: "{{ playbook_dir }}/templates/grafana/dashboards/system.json"
+#      inputs:
+#        - name:     "DS_TELEGRAF"
+#          pluginId: "influxdb"
+#          type:     "datasource"
+#          value:    "telegraf"
+#      overwrite: true

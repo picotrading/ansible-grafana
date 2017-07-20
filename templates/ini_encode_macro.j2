@@ -1,0 +1,58 @@
+{#
+ # Jinja2 macro which converts Python data structure to INI format
+ #}
+
+{%- macro ini_encode(
+      item,
+      delimiter="=",
+      first=[],
+      quote="",
+      section_is_comment=false,
+      ucase_prop=false) %}
+
+  {#- First process vars without a section #}
+  {%- for property, value in item.iteritems() | sort %}
+    {%- if value is not mapping %}
+      {%- if first | length == 0 -%}
+        {%- if first.append(1) %}{% endif %}
+      {%- endif -%}
+
+      {%- if value is string or value is number -%}
+        {{ (property | upper if ucase_prop else property) ~
+            delimiter ~ quote ~ value ~ quote ~ "\n" }}
+      {%- else %}
+        {%- for item in value -%}
+          {{ (property | upper if ucase_prop else property) ~
+              delimiter ~ quote ~ item ~ quote ~ "\n" }}
+        {%- endfor %}
+      {%- endif %}
+    {%- endif %}
+  {%- endfor %}
+
+  {#- Then process vars with a section #}
+  {%- for section, options in item.iteritems() | sort %}
+    {%- if options is mapping -%}
+      {%- if first | length == 0 -%}
+        {%- if first.append(1) %}{% endif %}
+      {%- else -%}
+        {{ "\n" }}
+      {%- endif %}
+      {%- if section_is_comment -%}
+        {{ "# " ~ section ~ "\n" }}
+      {%- else -%}
+        {{ "[" ~ section ~ "]\n" }}
+      {%- endif %}
+      {%- for property, value in options.iteritems() | sort -%}
+        {%- if value is string or value is number -%}
+          {{ (property | upper if ucase_prop else property) ~
+              delimiter ~ quote ~ value ~ quote ~ "\n" }}
+        {%- else %}
+          {%- for v in value -%}
+            {{ (property | upper if ucase_prop else property) ~
+                delimiter ~ quote ~ v ~ quote ~ "\n" }}
+          {%- endfor %}
+        {%- endif %}
+      {%- endfor %}
+    {%- endif %}
+  {%- endfor %}
+{%- endmacro %}

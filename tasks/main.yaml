@@ -40,4 +40,12 @@
   service:
     name: grafana-server
     enabled: yes
-    state: running
+    state: started
+
+# Datasources
+- include: datasources.yml
+  when: grafana_datasources|length > 0 or grafana_datasources_exclusive
+
+# Dashboards
+- include: dashboards.yml
+  when: grafana_dashboards|length > 0 or grafana_dashboards_exclusive

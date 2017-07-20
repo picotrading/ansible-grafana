@@ -40,4 +40,4 @@
   service:
     name: grafana-server
     enabled: yes
-    state: running
+    state: started

@@ -304,4 +304,4 @@ grafana_config:
   log.file: "{{ grafana_log__file }}"
   event_publisher: "{{ grafana_event_publisher }}"
 
-grafana_apt_repo: deb https://packagecloud.io/grafana/stable/debian/ wheezy main
+grafana_apt_repo: deb https://packagecloud.io/grafana/stable/debian/ {{ ansible_distribution_release }} main

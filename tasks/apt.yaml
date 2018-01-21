@@ -4,7 +4,7 @@
 
 - name: Add apt repository
   apt_repository:
-    repo: 'deb https://packagecloud.io/grafana/stable/debian/ wheezy main'
+    repo: '{{ grafana_apt_repo }}'
     state: present
 
 - name: Install Grafana package
